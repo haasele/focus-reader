@@ -44,7 +44,7 @@ class RSVPApp extends StatelessWidget {
           listenable: themeService,
           builder: (context, _) {
             return MaterialApp(
-              title: 'Speed Reader',
+              title: 'Focus Reader',
               debugShowCheckedModeBanner: false,
               theme: themeService.getLightTheme(lightDynamic),
               darkTheme: themeService.getDarkTheme(darkDynamic),
@@ -229,9 +229,9 @@ class _RSVPReaderScreenState extends State<RSVPReaderScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Fehler: $e')));
       }
     } finally {
       setState(() => _isLoading = false);
@@ -419,9 +419,9 @@ class _RSVPReaderScreenState extends State<RSVPReaderScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler beim Laden: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Fehler beim Laden: $e')));
       }
     } finally {
       setState(() => _isLoading = false);
@@ -574,8 +574,8 @@ class _RSVPReaderScreenState extends State<RSVPReaderScreen> {
         final previewWidth = screenWidth < 500
             ? screenWidth * 0.35
             : screenWidth < 800
-                ? 180.0
-                : 220.0;
+            ? 180.0
+            : 220.0;
 
         return Row(
           children: [
@@ -753,7 +753,9 @@ class _RSVPReaderScreenState extends State<RSVPReaderScreen> {
                           height: 55,
                           child: FilledButton.icon(
                             onPressed: _words.isNotEmpty ? _togglePlay : null,
-                            icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+                            icon: Icon(
+                              _isPlaying ? Icons.pause : Icons.play_arrow,
+                            ),
                             label: Text(
                               _isPlaying ? "Pausieren" : "Starten",
                               style: const TextStyle(
@@ -783,18 +785,11 @@ class _RSVPReaderScreenState extends State<RSVPReaderScreen> {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.menu_book_outlined,
-            size: 64,
-            color: colorScheme.outline,
-          ),
+          Icon(Icons.menu_book_outlined, size: 64, color: colorScheme.outline),
           const SizedBox(height: 16),
           Text(
             "PDF / EPUB / TXT öffnen",
-            style: TextStyle(
-              fontSize: 18,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 18, color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 8),
           FilledButton.tonalIcon(
@@ -949,11 +944,7 @@ class _RSVPReaderScreenState extends State<RSVPReaderScreen> {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 18),
-          const SizedBox(width: 6),
-          Text(label),
-        ],
+        children: [Icon(icon, size: 18), const SizedBox(width: 6), Text(label)],
       ),
     );
   }

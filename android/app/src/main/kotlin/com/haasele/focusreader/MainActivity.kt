@@ -1,4 +1,4 @@
-package com.example.focus_reader
+package com.haasele.focusreader
 
 import io.flutter.embedding.android.FlutterActivity
 
