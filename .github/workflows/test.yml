@@ -37,14 +37,12 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
         
-      - name: Decode keystore
+      - name: Decode keystore from ENV
         run: |
           mkdir -p android/app
-          cat <<EOF | base64 -D > android/app/release.jks
-          ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          EOF
+          export KS_BASE64="${{ secrets.ANDROID_KEYSTORE_BASE64 }}"
+          echo "$KS_BASE64" | base64 -D > android/app/release.jks
           ls -lh android/app/release.jks
-
       
       - name: Create key.properties
         run: |
