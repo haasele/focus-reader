@@ -1,9 +1,17 @@
-name: Flutter Multi-Platform CI
+name: Flutter Multi-Platform CI (Stable)
 
 on:
   push:
     branches: [ main ]
   pull_request:
+
+concurrency:
+  group: flutter-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_CHANNEL: stable
+  JAVA_VERSION: '17'
 
 jobs:
   android_web:
@@ -13,19 +21,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
-          channel: stable
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
-      - run: flutter pub get
-      - run: flutter test
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test
 
       - name: Build Android APK
         run: flutter build apk --release
 
       - name: Build Web
-        run: flutter build web
+        run: flutter build web --release
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
@@ -33,59 +51,70 @@ jobs:
           name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      - name: Upload Web Build
+      - name: Upload Web
         uses: actions/upload-artifact@v4
         with:
           name: web-build
           path: build/web
 
   linux:
-    name: Linux
+    name: Linux Desktop
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
-      - run: flutter pub get
-
-      - name: Enable Linux Desktop
+      - name: Enable Linux desktop
         run: flutter config --enable-linux-desktop
+
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Build Linux
         run: flutter build linux --release
 
-      - name: Upload Linux Build
+      - name: Upload Linux build
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
           path: build/linux/x64/release/bundle
 
   windows:
-    name: Windows
+    name: Windows Desktop
     runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
-      - run: flutter pub get
-
-      - name: Enable Windows Desktop
+      - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
+
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Build Windows
         run: flutter build windows --release
 
-      - name: Upload Windows Build
+      - name: Upload Windows build
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
@@ -98,20 +127,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
-      - run: flutter pub get
-
-      - name: Enable macOS Desktop
+      - name: Enable macOS desktop
         run: flutter config --enable-macos-desktop
+
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Build macOS
         run: flutter build macos --release
 
-      - name: Upload macOS Build
+      - name: Upload macOS build
         uses: actions/upload-artifact@v4
         with:
           name: macos-build
@@ -120,7 +151,7 @@ jobs:
       - name: Build iOS (no codesign)
         run: flutter build ios --release --no-codesign
 
-      - name: Upload iOS Build
+      - name: Upload iOS build
         uses: actions/upload-artifact@v4
         with:
           name: ios-build
