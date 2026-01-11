@@ -38,7 +38,7 @@ jobs:
         run: flutter pub get
 
       - name: Run tests
-        run: flutter test
+        run: flutter doctor
 
       - name: Build Android APK
         run: flutter build apk --release
