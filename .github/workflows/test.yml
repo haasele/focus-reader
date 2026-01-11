@@ -39,23 +39,18 @@ jobs:
         
       - name: Decode keystore
         run: |
+          mkdir -p android/app
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.jks
-
+      
       - name: Create key.properties
         run: |
           echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=release.jks" >> android/key.properties
-
-      - name: Show Key
-        run: |
-          echo "Show config"
-          cat android/key.properties
-          cat android/app/release.jks
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}"
-          echo "${{ secrets.ANDROID_KEY_ALIAS }}"
-          sleep 15
+          echo "storeFile=app/release.jks" >> android/key.properties
       
+      - name: Check keystore
+        run: ls -lh android/app/ && sleep 5
+
       - name: Build Android APK
         run: flutter build apk
