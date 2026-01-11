@@ -49,9 +49,12 @@ jobs:
         run: |
           echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "keyAlias=release" >> android/key.properties
           echo "storeFile=release.jks" >> android/key.properties
-      
+          keytool -list -v \
+            -keystore android/app/release.jks \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD"
+
       - name: Build Android APK
         run: flutter build apk --release
 
