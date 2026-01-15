@@ -114,10 +114,40 @@ class _RSVPReaderScreenState extends State<RSVPReaderScreen> {
     setState(() => _isLoading = true);
 
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['epub', 'pdf', 'txt'],
-      );
+      FilePickerResult? result;
+      
+      if (Platform.isMacOS) {
+        result = await FilePicker.platform.pickFiles(
+          type: FileType.any,
+          allowMultiple: false,
+        );
+        
+        if (result != null) {
+          final fileName = result.files.single.name.toLowerCase();
+          final extension = result.files.single.extension?.toLowerCase() ?? "";
+          final validExtensions = ['epub', 'pdf', 'txt'];
+          
+          if (!validExtensions.contains(extension) && 
+              !fileName.endsWith('.epub') && 
+              !fileName.endsWith('.pdf') && 
+              !fileName.endsWith('.txt')) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Bitte wählen Sie eine EPUB, PDF oder TXT Datei aus.'),
+                ),
+              );
+            }
+            setState(() => _isLoading = false);
+            return;
+          }
+        }
+      } else {
+        result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['epub', 'pdf', 'txt'],
+        );
+      }
 
       if (result != null) {
         String extension = result.files.single.extension?.toLowerCase() ?? "";

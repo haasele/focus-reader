@@ -35,6 +35,8 @@
 			<string>EPUB Document</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>epub</string>
@@ -42,6 +44,7 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>org.idpf.epub-container</string>
+				<string>public.data</string>
 			</array>
 		</dict>
 		<dict>
@@ -49,6 +52,8 @@
 			<string>PDF Document</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>pdf</string>
@@ -56,6 +61,7 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.adobe.pdf</string>
+				<string>public.data</string>
 			</array>
 		</dict>
 		<dict>
@@ -63,6 +69,8 @@
 			<string>Plain Text</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>txt</string>
@@ -70,6 +78,7 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>public.plain-text</string>
+				<string>public.data</string>
 			</array>
 		</dict>
 	</array>
