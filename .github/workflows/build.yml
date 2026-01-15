@@ -344,7 +344,18 @@ jobs:
           $env:PATH = "$wixPath;$env:PATH"
           
           # Use heat.exe to harvest all files from the build directory
+          # Generate as fragments that can be included
           & heat.exe dir "$buildDir" -out files.wxs -gg -g1 -sfrag -srd -scom -sreg -dr INSTALLFOLDER -cg ApplicationFiles -var var.SourceDir
+          
+          # Convert the generated Wix file to an Include file
+          # Read the content and wrap it in Include tags
+          $filesContent = Get-Content files.wxs -Raw
+          # Replace <Wix> with <Include> and remove closing </Wix>
+          $filesContent = $filesContent -replace '<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">', '<Include>'
+          $filesContent = $filesContent -replace '</Wix>', '</Include>'
+          # Replace SourceDir variable with actual path
+          $filesContent = $filesContent -replace 'Source="SourceDir', "Source=`"$buildDir"
+          $filesContent | Out-File -FilePath files.wxs -Encoding UTF8 -NoNewline
           
           # Create main installer file
           $wxsLines = @(
@@ -378,12 +389,9 @@ jobs:
           )
           $wxsLines | Out-File -FilePath installer.wxs -Encoding UTF8
           
-          # Replace SourceDir variable in files.wxs
-          (Get-Content files.wxs) -replace 'Source="SourceDir', "Source=`"$buildDir" | Set-Content files.wxs
-          
           # Compile and link
-          & candle.exe installer.wxs files.wxs -dSourceDir="$buildDir"
-          & light.exe installer.wixobj files.wixobj -o "$appName-$version.msi" -ext WixUIExtension
+          & candle.exe installer.wxs -dSourceDir="$buildDir"
+          & light.exe installer.wixobj -o "$appName-$version.msi" -ext WixUIExtension
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
