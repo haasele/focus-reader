@@ -421,8 +421,8 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           APP_NAME="Focus Reader"
-          BUNDLE_ID="com.example.focusReader"
-          APP_PATH="build/macos/Build/Products/Release/focus_reader.app"
+          BUNDLE_ID="com.haasele.FocusReader"
+          APP_PATH="build/macos/Build/Products/Release/Focus Reader.app"
           PKG_NAME="FocusReader-${VERSION}.pkg"
           
           # Create a temporary directory for the package
@@ -438,7 +438,7 @@ jobs:
           echo '    <key>BundleHasStrictIdentifier</key>' >> component.plist
           echo '    <true/>' >> component.plist
           echo '    <key>RootRelativeBundlePath</key>' >> component.plist
-          echo '    <string>Applications/focus_reader.app</string>' >> component.plist
+          echo '    <string>Applications/Focus Reader.app</string>' >> component.plist
           echo '  </dict>' >> component.plist
           echo '</array>' >> component.plist
           echo '</plist>' >> component.plist
