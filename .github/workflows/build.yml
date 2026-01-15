@@ -65,7 +65,6 @@ jobs:
   web:
     name: Web
     runs-on: ubuntu-latest
-    environment: ANDROID_KEYSIGN
     steps:
       - uses: actions/checkout@v4
 
@@ -300,16 +299,52 @@ jobs:
       - name: Install WiX Toolset
         run: |
           choco install wixtoolset -y
+          # Refresh environment variables
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
       - name: Create MSI Installer
         run: |
           $version = "${{ steps.version.outputs.version }}"
           $buildDir = "build\windows\x64\runner\Release"
           $appName = "FocusReader"
-          $wixPath = "C:\Program Files (x86)\WiX Toolset v3.11\bin"
+          
+          # Find WiX Toolset installation path
+          # Search in common installation locations
+          $possiblePaths = @()
+          
+          # Check Program Files (x86) and Program Files
+          foreach ($pf in @("${env:ProgramFiles(x86)}", $env:ProgramFiles)) {
+            if ($pf) {
+              $wixDirs = Get-ChildItem "$pf" -Filter "WiX Toolset*" -Directory -ErrorAction SilentlyContinue
+              foreach ($dir in $wixDirs) {
+                $binPath = Join-Path $dir.FullName "bin"
+                if (Test-Path (Join-Path $binPath "heat.exe")) {
+                  $possiblePaths += $binPath
+                }
+              }
+            }
+          }
+          
+          # Also check if it's in PATH
+          try {
+            $heatCmd = Get-Command heat.exe -ErrorAction Stop
+            $possiblePaths += Split-Path $heatCmd.Source
+          } catch {
+            # Not in PATH, continue searching
+          }
+          
+          if ($possiblePaths.Count -eq 0) {
+            throw "WiX Toolset not found. Searched in Program Files and PATH."
+          }
+          
+          $wixPath = $possiblePaths[0]
+          Write-Host "Using WiX Toolset from: $wixPath"
+          
+          # Add WiX to PATH for this session
+          $env:PATH = "$wixPath;$env:PATH"
           
           # Use heat.exe to harvest all files from the build directory
-          & "$wixPath\heat.exe" dir "$buildDir" -out files.wxs -gg -g1 -sfrag -srd -scom -sreg -dr INSTALLFOLDER -cg ApplicationFiles -var var.SourceDir
+          & heat.exe dir "$buildDir" -out files.wxs -gg -g1 -sfrag -srd -scom -sreg -dr INSTALLFOLDER -cg ApplicationFiles -var var.SourceDir
           
           # Create main installer file
           $wxsLines = @(
@@ -347,8 +382,8 @@ jobs:
           (Get-Content files.wxs) -replace 'Source="SourceDir', "Source=`"$buildDir" | Set-Content files.wxs
           
           # Compile and link
-          & "$wixPath\candle.exe" installer.wxs files.wxs -dSourceDir="$buildDir"
-          & "$wixPath\light.exe" installer.wixobj files.wixobj -o "$appName-$version.msi" -ext WixUIExtension
+          & candle.exe installer.wxs files.wxs -dSourceDir="$buildDir"
+          & light.exe installer.wixobj files.wixobj -o "$appName-$version.msi" -ext WixUIExtension
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
@@ -358,8 +393,8 @@ jobs:
             build/windows/x64/runner/Release
             FocusReader-*.msi
 
-  macos_ios:
-    name: macOS + iOS
+  macos:
+    name: macOS
     runs-on: macos-latest
 
     steps:
@@ -432,11 +467,4 @@ jobs:
             build/macos/Build/Products/Release
             FocusReader-*.pkg
 
-      - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign
 
-      - name: Upload iOS build
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-build
-          path: build/ios/iphoneos
